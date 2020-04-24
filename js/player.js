@@ -4,6 +4,31 @@ export default class Player {
   constructor(scene, x, y) {
     this.scene = scene;
 
+    // Create help text boxs
+    /*this.help = scene.add.text(16, 16, "Arrows/WASD to move the player.", {
+      fontSize: "18px",
+      padding: { x: 10, y: 5 },
+      backgroundColor: "#ffffff",
+      fill: "#000000"
+    }).setScrollFactor(0).setDepth(1000);*/
+
+    // Function to toggle whether the help dialog is showing
+    this.helpToggle = function() {
+      console.log("H pressed");
+      if (!!this.help) {
+        if (this.help._visible) {
+          this.help.destroy();
+        }
+      } else {
+        this.help = scene.add.text(16, 16, "Arrows/WASD to move the player.", {
+          fontSize: "18px",
+          padding: { x: 10, y: 5 },
+          backgroundColor: "#ffffff",
+          fill: "#000000"
+        }).setScrollFactor(0).setDepth(1000);
+      }
+    }
+
     // Create the animations we need from the player spritesheet
     const anims = scene.anims;
     anims.create({
@@ -85,10 +110,11 @@ export default class Player {
     });
 
     // Track the keys
-    const { LEFT, RIGHT, UP, A, D, W, SPACE } = Phaser.Input.Keyboard.KeyCodes;
+    const { LEFT, RIGHT, UP, A, D, W, SPACE, H } = Phaser.Input.Keyboard.KeyCodes;
     this.leftInput = new MultiKey(scene, [LEFT, A]);
     this.rightInput = new MultiKey(scene, [RIGHT, D]);
     this.jumpInput = new MultiKey(scene, [UP, W, SPACE]);
+    this.helpInput = new MultiKey(scene, [H]);
 
     this.destroyed = false;
     this.scene.events.on("update", this.update, this);
@@ -134,8 +160,14 @@ export default class Player {
     const isRightKeyDown = this.rightInput.isDown();
     const isLeftKeyDown = this.leftInput.isDown();
     const isJumpKeyDown = this.jumpInput.isDown();
+    const isHelpKeyDown = this.helpInput.isDown();
     const isOnGround = this.isTouching.ground;
     const isInAir = !isOnGround;
+
+    // --- Show help ---
+    if (isHelpKeyDown) {
+      this.helpToggle();
+    }
 
     // --- Move the player horizontally ---
 
