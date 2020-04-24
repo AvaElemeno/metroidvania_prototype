@@ -8,6 +8,7 @@
  */
 
 import MainScene from "./main-scene.js";
+window.onload = function() { localStorage.setItem("health", 5); }
 
 const config = {
   type: Phaser.AUTO,
