@@ -93,15 +93,6 @@ export default class MainScene extends Phaser.Scene {
       callback: this.onPlayerWin,
       context: this
     });
-
-
-    /*const help = this.add.text(16, 16, "Arrows/WASD to move the player.", {
-      fontSize: "18px",
-      padding: { x: 10, y: 5 },
-      backgroundColor: "#ffffff",
-      fill: "#000000"
-    });
-    help.setScrollFactor(0).setDepth(1000);*/
   }
 
   onPlayerCollide({ gameObjectB }) {

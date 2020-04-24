@@ -4,30 +4,15 @@ export default class Player {
   constructor(scene, x, y) {
     this.scene = scene;
 
-    // Create help text boxs
-    /*this.help = scene.add.text(16, 16, "Arrows/WASD to move the player.", {
+    // Create help text box
+    this.helpToggledState = false;
+    this.help = scene.add.text(16, 550, "Arrows/WASD to move the player.", {
       fontSize: "18px",
       padding: { x: 10, y: 5 },
       backgroundColor: "#ffffff",
       fill: "#000000"
-    }).setScrollFactor(0).setDepth(1000);*/
-
-    // Function to toggle whether the help dialog is showing
-    this.helpToggle = function() {
-      console.log("H pressed");
-      if (!!this.help) {
-        if (this.help._visible) {
-          this.help.destroy();
-        }
-      } else {
-        this.help = scene.add.text(16, 16, "Arrows/WASD to move the player.", {
-          fontSize: "18px",
-          padding: { x: 10, y: 5 },
-          backgroundColor: "#ffffff",
-          fill: "#000000"
-        }).setScrollFactor(0).setDepth(1000);
-      }
-    }
+    }).setScrollFactor(0).setDepth(1000);
+    this.help.setVisible(false);
 
     // Create the animations we need from the player spritesheet
     const anims = scene.anims;
@@ -161,13 +146,21 @@ export default class Player {
     const isLeftKeyDown = this.leftInput.isDown();
     const isJumpKeyDown = this.jumpInput.isDown();
     const isHelpKeyDown = this.helpInput.isDown();
+    const isHelpKeyUp = this.helpInput.isUp();
     const isOnGround = this.isTouching.ground;
     const isInAir = !isOnGround;
 
     // --- Show help ---
     if (isHelpKeyDown) {
-      this.helpToggle();
+      if (!this.helpToggledState) {
+        this.help.setVisible(!this.help._visible);
+        this.helpToggledState = true;
+      } 
     }
+    if (isHelpKeyUp) {
+      this.helpToggledState = false;
+    }
+    
 
     // --- Move the player horizontally ---
 
