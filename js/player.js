@@ -13,6 +13,7 @@ export default class Player {
       fill: "#000000"
     }).setScrollFactor(0).setDepth(1000);
     this.help.setVisible(false);
+    
 
     // Create the animations we need from the player spritesheet
     const anims = scene.anims;
@@ -28,6 +29,33 @@ export default class Player {
       frameRate: 12,
       repeat: -1
     });
+
+    // Create health bar
+    this.health = (!!localStorage.getItem("health")) ? 
+      localStorage.getItem("health") : 5;
+    anims.create({
+      key: "health-unit",
+      frames: anims.generateFrameNumbers("health", { start: 37, end: 37 }),
+      frameRate: 0,
+      repeat: -1
+    });
+
+    this.healthbar_1 = scene.matter.add.sprite(32, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
+    this.healthbar_2 = scene.matter.add.sprite(64, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
+    this.healthbar_3 = scene.matter.add.sprite(96, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
+    this.healthbar_4 = scene.matter.add.sprite(128, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
+    this.healthbar_5 = scene.matter.add.sprite(160, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
+    
+    this.modifyHealth = function(setData) {
+      if (this.health < 1) { this.healthbar_1.anims.stop(); this.healthbar_1.setTexture("health", 329) } else { this.healthbar_1.anims.play("health-unit", true); }
+      if (this.health < 2) { this.healthbar_2.anims.stop(); this.healthbar_2.setTexture("health", 329) } else { this.healthbar_2.anims.play("health-unit", true); }
+      if (this.health < 3) { this.healthbar_3.anims.stop(); this.healthbar_3.setTexture("health", 329) } else { this.healthbar_3.anims.play("health-unit", true); }
+      if (this.health < 4) { this.healthbar_4.anims.stop(); this.healthbar_4.setTexture("health", 329) } else { this.healthbar_4.anims.play("health-unit", true); }
+      if (this.health < 5) { this.healthbar_5.anims.stop(); this.healthbar_5.setTexture("health", 329) } else { this.healthbar_5.anims.play("health-unit", true); }
+      if (setData) { localStorage.setItem("health", (this.health > 1) ? this.health -=1 : 5) }
+      console.log("function was called " + this.health);
+    }  
+    this.modifyHealth(false);
 
     // Create the physics-based sprite that we will move around and animate
     this.sprite = scene.matter.add.sprite(0, 0, "player", 0);
@@ -134,6 +162,7 @@ export default class Player {
   }
 
   freeze() {
+    this.modifyHealth(true);
     this.sprite.setStatic(true);
   }
 

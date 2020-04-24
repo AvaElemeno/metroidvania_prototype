@@ -23,6 +23,17 @@ export default class MainScene extends Phaser.Scene {
       }
     );
 
+    this.load.spritesheet(
+      "health",
+      "assets/tilesets/kenney-tileset-64px-extruded.png",
+      {
+        frameWidth: 64,
+        frameHeight: 64,
+        margin: 1,
+        spacing: 2
+      }
+    );
+
     this.load.atlas("emoji", "assets/atlases/emoji.png", "assets/atlases/emoji.json");
   }
 
