@@ -124,12 +124,6 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  gameOver() {
-
-    //Need to use the camerafade out and add Red text saying Game Over
-
-  }
-
   onPlayerWin() {
     // Celebrate only once
     this.unsubscribeCelebrate();

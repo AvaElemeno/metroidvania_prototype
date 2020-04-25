@@ -4,16 +4,6 @@ export default class Player {
   constructor(scene, x, y) {
     this.scene = scene;
 
-    // Create help text box
-    this.helpToggledState = false;
-    this.help = scene.add.text(16, 550, "Arrows/WASD to move the player.", {
-      fontSize: "18px",
-      padding: { x: 10, y: 5 },
-      backgroundColor: "#ffffff",
-      fill: "#000000"
-    }).setScrollFactor(0).setDepth(1000);
-    this.help.setVisible(false);
-    
     // Create the animations we need from the player spritesheet
     const anims = scene.anims;
     anims.create({
@@ -28,6 +18,37 @@ export default class Player {
       frameRate: 12,
       repeat: -1
     });
+
+    // Create the physics-based sprite that we will move around and animate
+    this.sprite = scene.matter.add.sprite(0, 0, "player", 0);
+
+    // Create help text box
+    this.helpToggledState = false;
+    this.help = scene.add.text(16, 550, "Arrows/WASD to move the player.", {
+      fontSize: "18px",
+      padding: { x: 10, y: 5 },
+      backgroundColor: "#ffffff",
+      fill: "#000000"
+    }).setScrollFactor(0).setDepth(1000);
+    this.help.setVisible(false);
+
+    // Handle Game Over Text
+    this.gameOver = false;
+    this.gameOverScreen = scene.add.text(0, 0, "GAME OVER", {
+      fontSize: "64px",
+      fontFamily: "sans-serif",
+      padding: { x: 210, y: 265 },
+      backgroundColor: "#000c1f",
+      fill: "#ff0000"
+    }).setScrollFactor(0).setDepth(1000);
+    this.gameOverScreen.setVisible(false);
+    this.gameOverExplanation = scene.add.text(16, 550, "Press R to continue...", {
+      fontSize: "18px",
+      padding: { x: 10, y: 5 },
+      backgroundColor: "#000c1f",
+      fill: "#ffffff"
+    }).setScrollFactor(0).setDepth(1000);
+    this.gameOverExplanation.setVisible(false);
 
     // Create health bar
     this.health = (!!localStorage.getItem("health")) ? 
@@ -47,12 +68,16 @@ export default class Player {
       this.healthbar_3.setTexture("health", (this.health < 3) ? 329 : 37);
       this.healthbar_4.setTexture("health", (this.health < 4) ? 329 : 37);
       this.healthbar_5.setTexture("health", (this.health < 5) ? 329 : 37);
-      if (setData) { localStorage.setItem("health", (this.health > 1) ? this.health -=1 : 5) }
+      if (this.health < 1) { 
+        this.gameOver = true; 
+        this.gameOverScreen.setVisible(true); 
+        this.gameOverExplanation.setVisible(true);
+      }
+      if (setData) { localStorage.setItem("health", (this.health > 0) ? this.health -=1 : (this.gameOver)? 0:5); }
     }  
     this.modifyHealth(false);
 
-    // Create the physics-based sprite that we will move around and animate
-    this.sprite = scene.matter.add.sprite(0, 0, "player", 0);
+
 
     // The player's body is going to be a compound body that looks something like this:
     //
@@ -117,12 +142,14 @@ export default class Player {
     });
 
     // Track the keys
-    const { LEFT, RIGHT, UP, A, D, W, SPACE, H } = Phaser.Input.Keyboard.KeyCodes;
+    const { LEFT, RIGHT, UP, A, D, W, SPACE, H, R } = Phaser.Input.Keyboard.KeyCodes;
     this.leftInput = new MultiKey(scene, [LEFT, A]);
     this.rightInput = new MultiKey(scene, [RIGHT, D]);
     this.jumpInput = new MultiKey(scene, [UP, W, SPACE]);
     this.helpInput = new MultiKey(scene, [H]);
+    this.contInput = new MultiKey(scene, [R]);
 
+    // Handle scene destruction
     this.destroyed = false;
     this.scene.events.on("update", this.update, this);
     this.scene.events.once("shutdown", this.destroy, this);
@@ -163,18 +190,22 @@ export default class Player {
   update() {
     if (this.destroyed) return;
 
+    // Declarations
     const sprite = this.sprite;
     const velocity = sprite.body.velocity;
+    const isOnGround = this.isTouching.ground;
+    const isInAir = !isOnGround;
+    
+    // Keyboard input states
     const isRightKeyDown = this.rightInput.isDown();
     const isLeftKeyDown = this.leftInput.isDown();
     const isJumpKeyDown = this.jumpInput.isDown();
     const isHelpKeyDown = this.helpInput.isDown();
     const isHelpKeyUp = this.helpInput.isUp();
-    const isOnGround = this.isTouching.ground;
-    const isInAir = !isOnGround;
+    const isContKeyDown = this.contInput.isDown();
 
     // --- Show help ---
-    if (isHelpKeyDown) {
+    if (isHelpKeyDown && !this.gameOver) {
       if (!this.helpToggledState) {
         this.help.setVisible(!this.help._visible);
         this.helpToggledState = true;
@@ -183,6 +214,15 @@ export default class Player {
     if (isHelpKeyUp) {
       this.helpToggledState = false;
     }
+
+    // --- Check for continue when Game Over ---
+    if (this.gameOver && isContKeyDown) {
+      this.gameOverScreen.setVisible(false);
+      this.gameOverExplanation.setVisible(false);
+      this.gameOver = false;
+      this.health = 6;
+      this.modifyHealth(true);
+    }
     
 
     // --- Move the player horizontally ---
@@ -190,14 +230,14 @@ export default class Player {
     // Adjust the movement so that the player is slower in the air
     const moveForce = isOnGround ? 0.01 : 0.005;
 
-    if (isLeftKeyDown) {
+    if (isLeftKeyDown && !this.gameOver) {
       sprite.setFlipX(true);
 
       // Don't let the player push things left if they in the air
       if (!(isInAir && this.isTouching.left)) {
         sprite.applyForce({ x: -moveForce, y: 0 });
       }
-    } else if (isRightKeyDown) {
+    } else if (isRightKeyDown && !this.gameOver) {
       sprite.setFlipX(false);
 
       // Don't let the player push things right if they in the air
@@ -214,7 +254,7 @@ export default class Player {
 
     // --- Move the player vertically ---
 
-    if (isJumpKeyDown && this.canJump && isOnGround) {
+    if (isJumpKeyDown && this.canJump && isOnGround && !this.gameOver) {
       sprite.setVelocityY(-11);
 
       // Add a slight delay between jumps since the bottom sensor will still collide for a few
