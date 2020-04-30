@@ -7,7 +7,7 @@
  *  - Character by 0x72 under CC-0, https://0x72.itch.io/16x16-industrial-tileset
  */
 
-// Reset Globals and pull in mainScene
+// Initialize Globals and pull in mainScene
 import MainScene from "./main-scene.js";
 window.onload = function() { 
   localStorage.setItem("health", 5); 

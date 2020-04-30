@@ -40,6 +40,21 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+
+    // Declare globalScenesMap (which will be moved later possibly to its own file)
+    const globalScenesMap = {
+      "map_1":{
+        left: null,
+        right: "map_2"
+      },
+      "map_2":{
+        left: "map_1",
+        right: null
+      }
+    }
+    this.sceneData = globalScenesMap[localStorage.getItem("current_map")];
+
+
     // Declare initial setup for the map
     this.map = this.make.tilemap({ key: localStorage.getItem("current_map") });
     const tileset = this.map.addTilesetImage("kenney-tileset-64px-extruded");
@@ -90,43 +105,62 @@ export default class MainScene extends Phaser.Scene {
       createRotatingPlatform(this, point.x, point.y);
     });
 
-    // Create Next (traveling right) map sensor
-    if (this.map.findObject("Sensors", obj => obj.name === "next")) {
-      const nextRect = this.map.findObject("Sensors", obj => obj.name === "next");
-      const nextSensor = this.matter.add.rectangle(
-        nextRect.x + nextRect.width / 2,
-        nextRect.y + nextRect.height / 2,
-        nextRect.width,
-        nextRect.height,
+    // Create Right map sensor
+    if (this.map.findObject("Sensors", obj => obj.name === "right")) {
+      const rightRect = this.map.findObject("Sensors", obj => obj.name === "right");
+      const rightSensor = this.matter.add.rectangle(
+        rightRect.x + rightRect.width / 2,
+        rightRect.y + rightRect.height / 2,
+        rightRect.width,
+        rightRect.height,
         { isSensor: true, isStatic: true }
       );
-      this.unsubscribeNext = this.matterCollision.addOnCollideStart({
+      this.unsubscribeRight = this.matterCollision.addOnCollideStart({
         objectA: this.player.sprite,
-        objectB: nextSensor,
-        callback: this.goNextStage,
+        objectB: rightSensor,
+        callback: this.goRightStage,
         context: this
       });
     }
 
-    // Create Back (traveling left) map sensor
-    if (this.map.findObject("Sensors", obj => obj.name === "back")) {
-      const backRect = this.map.findObject("Sensors", obj => obj.name === "back");
-      const backSensor = this.matter.add.rectangle(
-        backRect.x + backRect.width / 2,
-        backRect.y + backRect.height / 2,
-        backRect.width,
-        backRect.height,
+    // Create Left map sensor
+    if (this.map.findObject("Sensors", obj => obj.name === "left")) {
+      const leftRect = this.map.findObject("Sensors", obj => obj.name === "left");
+      const leftSensor = this.matter.add.rectangle(
+        leftRect.x + leftRect.width / 2,
+        leftRect.y + leftRect.height / 2,
+        leftRect.width,
+        leftRect.height,
         { isSensor: true, isStatic: true }
       );
-      this.unsubscribeBack = this.matterCollision.addOnCollideStart({
+      this.unsubscribeLeft = this.matterCollision.addOnCollideStart({
         objectA: this.player.sprite,
-        objectB: backSensor,
-        callback: this.goBackStage,
+        objectB: leftSensor,
+        callback: this.goLeftStage,
         context: this
       });
     }
   }
 
+  goRightStage() {
+    // Set Right and then load it
+    if (!!this.sceneData && !!this.sceneData.right) {
+      this.unsubscribeRight();
+      localStorage.setItem("travelingLeft", false);
+      localStorage.setItem("current_map", this.sceneData.right);
+      this.scene.restart();
+    }
+  }
+
+  goLeftStage() {
+    // Set Left and then load it
+    if (!!this.sceneData && !!this.sceneData.left) {
+      this.unsubscribeLeft();
+      localStorage.setItem("travelingLeft", true);
+      localStorage.setItem("current_map", this.sceneData.left);
+      this.scene.restart();
+    }
+  }
 
   onPlayerCollide({ gameObjectB }) {
     if (!gameObjectB || !(gameObjectB instanceof Phaser.Tilemaps.Tile)) return;
@@ -134,27 +168,19 @@ export default class MainScene extends Phaser.Scene {
     // Set tile, then if lethal initiate death
     const tile = gameObjectB;
     if (tile.properties.isLethal) {
+
+      // If game over then reset Globals
+      if (!!localStorage.getItem("health") && localStorage.getItem("health") < 1) {
+        localStorage.setItem("current_map", "map_1");
+        localStorage.setItem("travelingLeft", false); 
+      }
+
+      // Create a player death and scene restart
       this.unsubscribePlayerCollide();
       this.player.freeze();
       const cam = this.cameras.main;
       cam.fade(250, 0, 0, 0);
       cam.once("camerafadeoutcomplete", () => this.scene.restart());
     }
-  }
-
-  goBackStage() {
-    // Set destination and then load it
-    this.unsubscribeBack();
-    localStorage.setItem("travelingLeft", true);
-    localStorage.setItem("current_map", "map_1");
-    this.scene.restart();
-  }
-
-  goNextStage() {
-    // Set destination and then load it
-    this.unsubscribeNext();
-    localStorage.setItem("travelingLeft", false);
-    localStorage.setItem("current_map", "map_2");
-    this.scene.restart();
   }
 }

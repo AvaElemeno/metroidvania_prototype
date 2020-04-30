@@ -214,7 +214,7 @@
                 {
                  "height":308,
                  "id":47,
-                 "name":"next",
+                 "name":"right",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -225,7 +225,7 @@
                 {
                  "height":308,
                  "id":48,
-                 "name":"back",
+                 "name":"left",
                  "rotation":0,
                  "type":"",
                  "visible":true,
