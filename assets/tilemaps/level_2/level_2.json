@@ -99,8 +99,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":100,
-                 "y":250
+                 "x":102,
+                 "y":366
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -214,13 +214,24 @@
                 {
                  "height":308,
                  "id":47,
-                 "name":"Celebration",
+                 "name":"next",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":94,
                  "x":2942,
                  "y":-116
+                }, 
+                {
+                 "height":308,
+                 "id":48,
+                 "name":"back",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":94,
+                 "x":-66,
+                 "y":82
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -229,7 +240,7 @@
          "y":0
         }],
  "nextlayerid":10,
- "nextobjectid":48,
+ "nextobjectid":49,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.3.4",

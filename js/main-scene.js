@@ -40,6 +40,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // Declare initial setup for the map
     this.map = this.make.tilemap({ key: localStorage.getItem("current_map") });
     const tileset = this.map.addTilesetImage("kenney-tileset-64px-extruded");
     const groundLayer = this.map.createDynamicLayer("Ground", tileset, 0, 0);
@@ -57,16 +58,19 @@ export default class MainScene extends Phaser.Scene {
     this.matter.world.convertTilemapLayer(groundLayer);
     this.matter.world.convertTilemapLayer(lavaLayer);
 
+    // Set the bounds for the camera
     this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
     this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
     // The spawn point is set using a point object inside of Tiled (within the "Spawn" object layer)
-    const { x, y } = this.map.findObject("Spawn", obj => obj.name === "Spawn Point");
+    const whichSpawn = (localStorage.getItem("travelingLeft") == "false") ? "Spawn Point" : "Back Spawn Point";
+    const { x, y } = this.map.findObject("Spawn", obj => obj.name === whichSpawn);
     this.player = new Player(this, x, y);
 
     // Smoothly follow the player
     this.cameras.main.startFollow(this.player.sprite, false, 0.5, 0.5);
 
+    // Set collision
     this.unsubscribePlayerCollide = this.matterCollision.addOnCollideStart({
       objectA: this.player.sprite,
       callback: this.onPlayerCollide,
@@ -76,8 +80,6 @@ export default class MainScene extends Phaser.Scene {
     // Load up some crates from the "Crates" object layer created in Tiled
     this.map.getObjectLayer("Crates").objects.forEach(crateObject => {
       const { x, y, width, height } = crateObject;
-
-      // Tiled origin for coordinate system is (0, 1), but we want (0.5, 0.5)
       this.matter.add
         .image(x + width / 2, y - height / 2, "block")
         .setBody({ shape: "rectangle", density: 0.001 });
@@ -88,38 +90,51 @@ export default class MainScene extends Phaser.Scene {
       createRotatingPlatform(this, point.x, point.y);
     });
 
-    // Create a sensor at rectangle object created in Tiled (under the "Sensors" layer)
-    const rect = this.map.findObject("Sensors", obj => obj.name === "Celebration");
-    const celebrateSensor = this.matter.add.rectangle(
-      rect.x + rect.width / 2,
-      rect.y + rect.height / 2,
-      rect.width,
-      rect.height,
-      {
-        isSensor: true, // It shouldn't physically interact with other bodies
-        isStatic: true // It shouldn't move
-      }
-    );
-    this.unsubscribeCelebrate = this.matterCollision.addOnCollideStart({
-      objectA: this.player.sprite,
-      objectB: celebrateSensor,
-      callback: this.onPlayerWin,
-      context: this
-    });
+    // Create Next (traveling right) map sensor
+    if (this.map.findObject("Sensors", obj => obj.name === "next")) {
+      const nextRect = this.map.findObject("Sensors", obj => obj.name === "next");
+      const nextSensor = this.matter.add.rectangle(
+        nextRect.x + nextRect.width / 2,
+        nextRect.y + nextRect.height / 2,
+        nextRect.width,
+        nextRect.height,
+        { isSensor: true, isStatic: true }
+      );
+      this.unsubscribeNext = this.matterCollision.addOnCollideStart({
+        objectA: this.player.sprite,
+        objectB: nextSensor,
+        callback: this.goNextStage,
+        context: this
+      });
+    }
+
+    // Create Back (traveling left) map sensor
+    if (this.map.findObject("Sensors", obj => obj.name === "back")) {
+      const backRect = this.map.findObject("Sensors", obj => obj.name === "back");
+      const backSensor = this.matter.add.rectangle(
+        backRect.x + backRect.width / 2,
+        backRect.y + backRect.height / 2,
+        backRect.width,
+        backRect.height,
+        { isSensor: true, isStatic: true }
+      );
+      this.unsubscribeBack = this.matterCollision.addOnCollideStart({
+        objectA: this.player.sprite,
+        objectB: backSensor,
+        callback: this.goBackStage,
+        context: this
+      });
+    }
   }
 
 
   onPlayerCollide({ gameObjectB }) {
     if (!gameObjectB || !(gameObjectB instanceof Phaser.Tilemaps.Tile)) return;
 
+    // Set tile, then if lethal initiate death
     const tile = gameObjectB;
-
-    // Check the tile property set in Tiled (you could also just check the index if you aren't using
-    // Tiled in your game)
     if (tile.properties.isLethal) {
-      // Unsubscribe from collision events so that this logic is run only once
       this.unsubscribePlayerCollide();
-
       this.player.freeze();
       const cam = this.cameras.main;
       cam.fade(250, 0, 0, 0);
@@ -127,26 +142,19 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  onPlayerWin() {
-    // Celebrate only once
-    this.unsubscribeCelebrate();
-
+  goBackStage() {
     // Set destination and then load it
+    this.unsubscribeBack();
+    localStorage.setItem("travelingLeft", true);
+    localStorage.setItem("current_map", "map_1");
+    this.scene.restart();
+  }
+
+  goNextStage() {
+    // Set destination and then load it
+    this.unsubscribeNext();
+    localStorage.setItem("travelingLeft", false);
     localStorage.setItem("current_map", "map_2");
     this.scene.restart();
-
-    /*// Drop some heart-eye emojis, of course
-    for (let i = 0; i < 35; i++) {
-      const x = this.player.sprite.x + Phaser.Math.RND.integerInRange(-50, 50);
-      const y = this.player.sprite.y - 150 + Phaser.Math.RND.integerInRange(-10, 10);
-      this.matter.add
-        .image(x, y, "emoji", "1f60d", {
-          restitution: 1,
-          friction: 0,
-          density: 0.0001,
-          shape: "circle"
-        })
-        .setScale(0.5);
-    }*/
   }
 }
