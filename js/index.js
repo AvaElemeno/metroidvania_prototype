@@ -1,5 +1,5 @@
 /**
- * Author: Michael Hadley, mikewesthad.com
+ * Author: Alexa Amari
  * Asset Credits:
  *  - Twemoji, https://github.com/twitter/twemoji, CC-BY 4.0
  *  - Tilesets by Kenney, https://www.kenney.nl/assets/platformer-art-pixel-redux and
@@ -7,8 +7,12 @@
  *  - Character by 0x72 under CC-0, https://0x72.itch.io/16x16-industrial-tileset
  */
 
+// Reset Globals and pull in mainScene
 import MainScene from "./main-scene.js";
-window.onload = function() { localStorage.setItem("health", 5); }
+window.onload = function() { 
+  localStorage.setItem("health", 5); 
+  localStorage.setItem("current_map", "map_1");
+}
 
 const config = {
   type: Phaser.AUTO,

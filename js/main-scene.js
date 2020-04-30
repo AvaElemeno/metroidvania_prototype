@@ -3,7 +3,9 @@ import createRotatingPlatform from "./create-rotating-platform.js";
 
 export default class MainScene extends Phaser.Scene {
   preload() {
-    this.load.tilemapTiledJSON("map", "assets/tilemaps/level.json");
+    this.load.tilemapTiledJSON("map_1", "assets/tilemaps/level_1/level_1.json");
+    this.load.tilemapTiledJSON("map_2", "assets/tilemaps/level_2/level_2.json");
+
     this.load.image(
       "kenney-tileset-64px-extruded",
       "assets/tilesets/kenney-tileset-64px-extruded.png"
@@ -38,12 +40,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    const map = this.make.tilemap({ key: "map" });
-    const tileset = map.addTilesetImage("kenney-tileset-64px-extruded");
-    const groundLayer = map.createDynamicLayer("Ground", tileset, 0, 0);
-    const lavaLayer = map.createDynamicLayer("Lava", tileset, 0, 0);
-    map.createDynamicLayer("Background", tileset, 0, 0);
-    map.createDynamicLayer("Foreground", tileset, 0, 0).setDepth(10);
+    this.map = this.make.tilemap({ key: localStorage.getItem("current_map") });
+    const tileset = this.map.addTilesetImage("kenney-tileset-64px-extruded");
+    const groundLayer = this.map.createDynamicLayer("Ground", tileset, 0, 0);
+    const lavaLayer = this.map.createDynamicLayer("Lava", tileset, 0, 0);
+    this.map.createDynamicLayer("Background", tileset, 0, 0);
+    this.map.createDynamicLayer("Foreground", tileset, 0, 0).setDepth(10);
 
     // Set colliding tiles before converting the layer to Matter bodies
     groundLayer.setCollisionByProperty({ collides: true });
@@ -55,11 +57,11 @@ export default class MainScene extends Phaser.Scene {
     this.matter.world.convertTilemapLayer(groundLayer);
     this.matter.world.convertTilemapLayer(lavaLayer);
 
-    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
     // The spawn point is set using a point object inside of Tiled (within the "Spawn" object layer)
-    const { x, y } = map.findObject("Spawn", obj => obj.name === "Spawn Point");
+    const { x, y } = this.map.findObject("Spawn", obj => obj.name === "Spawn Point");
     this.player = new Player(this, x, y);
 
     // Smoothly follow the player
@@ -72,7 +74,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Load up some crates from the "Crates" object layer created in Tiled
-    map.getObjectLayer("Crates").objects.forEach(crateObject => {
+    this.map.getObjectLayer("Crates").objects.forEach(crateObject => {
       const { x, y, width, height } = crateObject;
 
       // Tiled origin for coordinate system is (0, 1), but we want (0.5, 0.5)
@@ -82,12 +84,12 @@ export default class MainScene extends Phaser.Scene {
     });
 
     // Create platforms at the point locations in the "Platform Locations" layer created in Tiled
-    map.getObjectLayer("Platform Locations").objects.forEach(point => {
+    this.map.getObjectLayer("Platform Locations").objects.forEach(point => {
       createRotatingPlatform(this, point.x, point.y);
     });
 
     // Create a sensor at rectangle object created in Tiled (under the "Sensors" layer)
-    const rect = map.findObject("Sensors", obj => obj.name === "Celebration");
+    const rect = this.map.findObject("Sensors", obj => obj.name === "Celebration");
     const celebrateSensor = this.matter.add.rectangle(
       rect.x + rect.width / 2,
       rect.y + rect.height / 2,
@@ -105,6 +107,7 @@ export default class MainScene extends Phaser.Scene {
       context: this
     });
   }
+
 
   onPlayerCollide({ gameObjectB }) {
     if (!gameObjectB || !(gameObjectB instanceof Phaser.Tilemaps.Tile)) return;
@@ -128,7 +131,11 @@ export default class MainScene extends Phaser.Scene {
     // Celebrate only once
     this.unsubscribeCelebrate();
 
-    // Drop some heart-eye emojis, of course
+    // Set destination and then load it
+    localStorage.setItem("current_map", "map_2");
+    this.scene.restart();
+
+    /*// Drop some heart-eye emojis, of course
     for (let i = 0; i < 35; i++) {
       const x = this.player.sprite.x + Phaser.Math.RND.integerInRange(-50, 50);
       const y = this.player.sprite.y - 150 + Phaser.Math.RND.integerInRange(-10, 10);
@@ -140,6 +147,6 @@ export default class MainScene extends Phaser.Scene {
           shape: "circle"
         })
         .setScale(0.5);
-    }
+    }*/
   }
 }

@@ -5,6 +5,6 @@
 
 2. Add ability to go to multiple maps
 
-3. Add health system
+3. Add attack animation / ability to break crates
 
-4. Add game over screen
+4. Add enemies
