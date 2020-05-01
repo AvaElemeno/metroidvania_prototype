@@ -204,7 +204,7 @@ export default class Player {
     const isHelpKeyUp = this.helpInput.isUp();
     const isContKeyDown = this.contInput.isDown();
 
-    // --- Show help ---
+    // Show help text
     if (isHelpKeyDown && !this.gameOver) {
       if (!this.helpToggledState) {
         this.help.setVisible(!this.help._visible);
@@ -215,7 +215,7 @@ export default class Player {
       this.helpToggledState = false;
     }
 
-    // --- Check for continue when Game Over ---
+    // Check for continue when Game Over
     if (this.gameOver && isContKeyDown) {
       this.gameOverScreen.setVisible(false);
       this.gameOverExplanation.setVisible(false);
@@ -223,42 +223,31 @@ export default class Player {
       this.health = 6;
       this.modifyHealth(true);
     }
-    
 
-    // --- Move the player horizontally ---
-
-    // Adjust the movement so that the player is slower in the air
+    // Make player slower in air, and limit horizontal speed
     const moveForce = isOnGround ? 0.01 : 0.005;
+    if (velocity.x > 7) sprite.setVelocityX(7);
+    else if (velocity.x < -7) sprite.setVelocityX(-7);
 
+    // Left directional movement
     if (isLeftKeyDown && !this.gameOver) {
       sprite.setFlipX(true);
-
-      // Don't let the player push things left if they in the air
       if (!(isInAir && this.isTouching.left)) {
         sprite.applyForce({ x: -moveForce, y: 0 });
       }
-    } else if (isRightKeyDown && !this.gameOver) {
-      sprite.setFlipX(false);
+    } 
 
-      // Don't let the player push things right if they in the air
+    // Right directional movement
+    if (isRightKeyDown && !this.gameOver) {
+      sprite.setFlipX(false);
       if (!(isInAir && this.isTouching.right)) {
         sprite.applyForce({ x: moveForce, y: 0 });
       }
     }
 
-    // Limit horizontal speed, without this the player's velocity would just keep increasing to
-    // absurd speeds. We don't want to touch the vertical velocity though, so that we don't
-    // interfere with gravity.
-    if (velocity.x > 7) sprite.setVelocityX(7);
-    else if (velocity.x < -7) sprite.setVelocityX(-7);
-
-    // --- Move the player vertically ---
-
+    // Jump movement (with delay between jumps so bottom sensor doesnt collide)
     if (isJumpKeyDown && this.canJump && isOnGround && !this.gameOver) {
       sprite.setVelocityY(-11);
-
-      // Add a slight delay between jumps since the bottom sensor will still collide for a few
-      // frames after a jump is initiated
       this.canJump = false;
       this.jumpCooldownTimer = this.scene.time.addEvent({
         delay: 250,

@@ -170,7 +170,7 @@ export default class MainScene extends Phaser.Scene {
     if (tile.properties.isLethal) {
 
       // If game over then reset Globals
-      if (!!localStorage.getItem("health") && localStorage.getItem("health") < 1) {
+      if (!!localStorage.getItem("health") && localStorage.getItem("health") == 1) {
         localStorage.setItem("current_map", "map_1");
         localStorage.setItem("travelingLeft", false); 
       }
