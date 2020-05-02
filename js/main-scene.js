@@ -1,5 +1,6 @@
 import Player from "./player.js";
 import createRotatingPlatform from "./create-rotating-platform.js";
+import MapExit from "./map-exit.js";
 
 export default class MainScene extends Phaser.Scene {
   preload() {
@@ -116,77 +117,11 @@ export default class MainScene extends Phaser.Scene {
       createRotatingPlatform(this, point.x, point.y);
     });
 
-    // Create Top map sensor
-    if (this.map.findObject("Sensors", obj => obj.name === "top")) {
-      const topRect = this.map.findObject("Sensors", obj => obj.name === "top");
-      const topSensor = this.matter.add.rectangle(
-        topRect.x + topRect.width / 2,
-        topRect.y + topRect.height / 2,
-        topRect.width,
-        topRect.height,
-        { isSensor: true, isStatic: true }
-      );
-      this.unsubscribeTop = this.matterCollision.addOnCollideStart({
-        objectA: this.player.sprite,
-        objectB: topSensor,
-        callback: this.goUpStage,
-        context: this
-      });
-    }
-
-    // Create Bottom map sensor
-    if (this.map.findObject("Sensors", obj => obj.name === "bottom")) {
-      const bottomRect = this.map.findObject("Sensors", obj => obj.name === "bottom");
-      const bottomSensor = this.matter.add.rectangle(
-        bottomRect.x + bottomRect.width / 2,
-        bottomRect.y + bottomRect.height / 2,
-        bottomRect.width,
-        bottomRect.height,
-        { isSensor: true, isStatic: true }
-      );
-      this.unsubscribeBottom = this.matterCollision.addOnCollideStart({
-        objectA: this.player.sprite,
-        objectB: bottomSensor,
-        callback: this.goDownStage,
-        context: this
-      });
-    }
-
-    // Create Right map sensor
-    if (this.map.findObject("Sensors", obj => obj.name === "right")) {
-      const rightRect = this.map.findObject("Sensors", obj => obj.name === "right");
-      const rightSensor = this.matter.add.rectangle(
-        rightRect.x + rightRect.width / 2,
-        rightRect.y + rightRect.height / 2,
-        rightRect.width,
-        rightRect.height,
-        { isSensor: true, isStatic: true }
-      );
-      this.unsubscribeRight = this.matterCollision.addOnCollideStart({
-        objectA: this.player.sprite,
-        objectB: rightSensor,
-        callback: this.goRightStage,
-        context: this
-      });
-    }
-
-    // Create Left map sensor
-    if (this.map.findObject("Sensors", obj => obj.name === "left")) {
-      const leftRect = this.map.findObject("Sensors", obj => obj.name === "left");
-      const leftSensor = this.matter.add.rectangle(
-        leftRect.x + leftRect.width / 2,
-        leftRect.y + leftRect.height / 2,
-        leftRect.width,
-        leftRect.height,
-        { isSensor: true, isStatic: true }
-      );
-      this.unsubscribeLeft = this.matterCollision.addOnCollideStart({
-        objectA: this.player.sprite,
-        objectB: leftSensor,
-        callback: this.goLeftStage,
-        context: this
-      });
-    }
+    // Create Directional Exits
+    this.topExit    = new MapExit(this, "above", "top", "Bottom Spawn");
+    this.bottomExit = new MapExit(this, "below", "bottom", "Top Spawn");
+    this.leftExit   = new MapExit(this, "left", "left", "Right Spawn");
+    this.rightExit  = new MapExit(this, "right", "right", "Left Spawn");
 
     // Create Ladder Sensor
     this.touchingLadder = false;
@@ -199,46 +134,6 @@ export default class MainScene extends Phaser.Scene {
         ladderRect.height,
         { isSensor: true, isStatic: true }
       );
-    }
-  }
-
-  goUpStage() {
-    // Set Top and then load it
-    if (!!this.sceneData && !!this.sceneData.above) {
-      this.unsubscribeTop();
-      localStorage.setItem("spawn_side", "Bottom Spawn");
-      localStorage.setItem("current_map", this.sceneData.above);
-      this.scene.restart();
-    }
-  }
-
-  goDownStage() {
-    // Set Top and then load it
-    if (!!this.sceneData && !!this.sceneData.below) {
-      this.unsubscribeBottom();
-      localStorage.setItem("spawn_side", "Top Spawn");
-      localStorage.setItem("current_map", this.sceneData.below);
-      this.scene.restart();
-    }
-  }
-
-  goRightStage() {
-    // Set Right and then load it
-    if (!!this.sceneData && !!this.sceneData.right) {
-      this.unsubscribeRight();
-      localStorage.setItem("spawn_side", "Left Spawn");
-      localStorage.setItem("current_map", this.sceneData.right);
-      this.scene.restart();
-    }
-  }
-
-  goLeftStage() {
-    // Set Left and then load it
-    if (!!this.sceneData && !!this.sceneData.left) {
-      this.unsubscribeLeft();
-      localStorage.setItem("spawn_side", "Right Spawn");
-      localStorage.setItem("current_map", this.sceneData.left);
-      this.scene.restart();
     }
   }
 
