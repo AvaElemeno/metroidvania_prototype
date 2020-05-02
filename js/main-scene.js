@@ -60,10 +60,12 @@ export default class MainScene extends Phaser.Scene {
     const tileset = this.map.addTilesetImage("kenney-tileset-64px-extruded");
     const groundLayer = this.map.createDynamicLayer("Ground", tileset, 0, 0);
     const lavaLayer = this.map.createDynamicLayer("Lava", tileset, 0, 0);
+    const ladderLayer = this.map.createDynamicLayer("Ladder", tileset, 0, 0);
     this.map.createDynamicLayer("Background", tileset, 0, 0);
     this.map.createDynamicLayer("Foreground", tileset, 0, 0).setDepth(10);
 
     // Set colliding tiles before converting the layer to Matter bodies
+    ladderLayer.setCollisionByProperty({ collides: true });
     groundLayer.setCollisionByProperty({ collides: true });
     lavaLayer.setCollisionByProperty({ collides: true });
 
@@ -140,7 +142,38 @@ export default class MainScene extends Phaser.Scene {
         context: this
       });
     }
+
+
+    // Create Ladder Sensor
+    this.touchingLadder = false;
+    if (this.map.findObject("Sensors", obj => obj.name === "ladder")) {
+      const ladderRect = this.map.findObject("Sensors", obj => obj.name === "ladder");
+      this.ladderSensor = this.matter.add.rectangle(
+        ladderRect.x + ladderRect.width / 2,
+        ladderRect.y + ladderRect.height / 2,
+        ladderRect.width,
+        ladderRect.height,
+        { isSensor: true, isStatic: true }
+      );
+      this.unsubscribeLadder = this.matterCollision.addOnCollideStart({
+        objectA: this.player.sprite,
+        objectB: this.ladderSensor,
+        callback: this.checkLadder,
+        context: this
+      });
+    }
+
   }
+
+  checkLadder() {
+    console.log("touching ladder;")
+    this.touchingLadder = true;
+    this.player.sprite.setVelocityX(0);
+    //console.info(this.ladderSensor);
+    //console.info(this.player);
+
+  }
+
 
   goRightStage() {
     // Set Right and then load it

@@ -17,6 +17,34 @@
 7. Add enemies
 
 
+Ladder logic
+
+NEED TO DO
+find a way to disable gravity
+make ladder logic only occur while on ladder =>
+put the collision checker into the update function?
+
+
+need a function that can check if the player is on the ladder
+
+while (within ladder bounds) {
+	if (not on ground) {
+		only space initiates jump
+			jumping reenables left/right
+		left input disabled
+		right input disabled
+		down travels down
+	}
+	if (up has been pressed) {
+		up climbs ladder
+		left / right traveling disabled
+		gravity disabled
+	}
+
+}
+
+
+
 ---
 // Depricated emoji script (which is funny)
 for (let i = 0; i < 35; i++) {

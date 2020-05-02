@@ -142,10 +142,11 @@ export default class Player {
     });
 
     // Track the keys
-    const { LEFT, RIGHT, UP, A, D, W, SPACE, H, R } = Phaser.Input.Keyboard.KeyCodes;
+    const { LEFT, RIGHT, UP, A, D, W, SPACE, H, R, DOWN, S } = Phaser.Input.Keyboard.KeyCodes;
     this.leftInput = new MultiKey(scene, [LEFT, A]);
     this.rightInput = new MultiKey(scene, [RIGHT, D]);
     this.jumpInput = new MultiKey(scene, [UP, W, SPACE]);
+    this.downInput = new MultiKey(scene, [DOWN, S]);
     this.helpInput = new MultiKey(scene, [H]);
     this.contInput = new MultiKey(scene, [R]);
 
@@ -200,13 +201,18 @@ export default class Player {
     const isRightKeyDown = this.rightInput.isDown();
     const isLeftKeyDown = this.leftInput.isDown();
     const isJumpKeyDown = this.jumpInput.isDown();
+    const isDownKeyDown = this.downInput.isDown();
     const isHelpKeyDown = this.helpInput.isDown();
     const isHelpKeyUp = this.helpInput.isUp();
     const isContKeyDown = this.contInput.isDown();
 
+    // Ladder movement
+    //this.onLadder = this.scene.checkLadder();
+
     // Show help text
     if (isHelpKeyDown && !this.gameOver) {
       if (!this.helpToggledState) {
+        this.scene.checkLadder();
         this.help.setVisible(!this.help._visible);
         this.helpToggledState = true;
       } 
@@ -230,7 +236,7 @@ export default class Player {
     else if (velocity.x < -7) sprite.setVelocityX(-7);
 
     // Left directional movement
-    if (isLeftKeyDown && !this.gameOver) {
+    if (isLeftKeyDown && !this.gameOver && !(this.scene.touchingLadder && !isOnGround)) {
       sprite.setFlipX(true);
       if (!(isInAir && this.isTouching.left)) {
         sprite.applyForce({ x: -moveForce, y: 0 });
@@ -238,21 +244,43 @@ export default class Player {
     } 
 
     // Right directional movement
-    if (isRightKeyDown && !this.gameOver) {
+    if (isRightKeyDown && !this.gameOver && !(this.scene.touchingLadder && !isOnGround)) {
       sprite.setFlipX(false);
       if (!(isInAir && this.isTouching.right)) {
         sprite.applyForce({ x: moveForce, y: 0 });
       }
     }
 
-    // Jump movement (with delay between jumps so bottom sensor doesnt collide)
-    if (isJumpKeyDown && this.canJump && isOnGround && !this.gameOver) {
-      sprite.setVelocityY(-11);
-      this.canJump = false;
-      this.jumpCooldownTimer = this.scene.time.addEvent({
-        delay: 250,
-        callback: () => (this.canJump = true)
-      });
+    if (this.scene.touchingLadder) {
+      if (!isOnGround) {
+        // only space initiates jump
+        //   jumping reenables left/right
+        
+        // down travels down
+        if (isDownKeyDown) {
+          sprite.applyForce({ x: 0, y: 0.005 });
+        }
+      }
+      if (isJumpKeyDown) {
+        sprite.applyForce({ x: 0, y: -0.005 });
+        sprite.setVelocityX(0);
+        // up climbs ladder
+        // left / right traveling disabled
+        // gravity disabled
+      }
+
+    } else {
+
+      // Jump movement (with delay between jumps so bottom sensor doesnt collide)
+      if (isJumpKeyDown && this.canJump && isOnGround && !this.gameOver) {
+        sprite.setVelocityY(-11);
+        this.canJump = false;
+        this.jumpCooldownTimer = this.scene.time.addEvent({
+          delay: 250,
+          callback: () => (this.canJump = true)
+        });
+      }
+
     }
 
     // Update the animation/texture based on the state of the player's state
