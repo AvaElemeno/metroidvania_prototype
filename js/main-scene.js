@@ -5,6 +5,7 @@ export default class MainScene extends Phaser.Scene {
   preload() {
     this.load.tilemapTiledJSON("map_1", "assets/tilemaps/level_1/level_1.json");
     this.load.tilemapTiledJSON("map_2", "assets/tilemaps/level_2/level_2.json");
+    this.load.tilemapTiledJSON("map_3", "assets/tilemaps/level_3/level_3.json");
 
     this.load.image(
       "kenney-tileset-64px-extruded",
@@ -44,13 +45,23 @@ export default class MainScene extends Phaser.Scene {
     // Declare globalScenesMap (which will be moved later possibly to its own file)
     const globalScenesMap = {
       "map_1":{
+        above: "map_3",
+        below: null,
         left: null,
         right: "map_2"
       },
       "map_2":{
+        above: null,
+        below: null,
         left: "map_1",
         right: null
-      }
+      },
+      "map_3":{
+        above: null,
+        below: "map_1",
+        left: null,
+        right: null
+      },
     }
     this.sceneData = globalScenesMap[localStorage.getItem("current_map")];
 
@@ -59,7 +70,7 @@ export default class MainScene extends Phaser.Scene {
     this.map = this.make.tilemap({ key: localStorage.getItem("current_map") });
     const tileset = this.map.addTilesetImage("kenney-tileset-64px-extruded");
     const groundLayer = this.map.createDynamicLayer("Ground", tileset, 0, 0);
-    const lavaLayer = this.map.createDynamicLayer("Lava", tileset, 0, 0);
+    const lavaLayer = this.map.createDynamicLayer("Lava", tileset, 0, 0).setDepth(15);
     this.map.createDynamicLayer("Background", tileset, 0, 0);
     this.map.createDynamicLayer("Foreground", tileset, 0, 0).setDepth(10);
 
@@ -104,6 +115,42 @@ export default class MainScene extends Phaser.Scene {
     this.map.getObjectLayer("Platform Locations").objects.forEach(point => {
       createRotatingPlatform(this, point.x, point.y);
     });
+
+    // Create Top map sensor
+    if (this.map.findObject("Sensors", obj => obj.name === "top")) {
+      const topRect = this.map.findObject("Sensors", obj => obj.name === "top");
+      const topSensor = this.matter.add.rectangle(
+        topRect.x + topRect.width / 2,
+        topRect.y + topRect.height / 2,
+        topRect.width,
+        topRect.height,
+        { isSensor: true, isStatic: true }
+      );
+      this.unsubscribeTop = this.matterCollision.addOnCollideStart({
+        objectA: this.player.sprite,
+        objectB: topSensor,
+        callback: this.goUpStage,
+        context: this
+      });
+    }
+
+    // Create Bottom map sensor
+    if (this.map.findObject("Sensors", obj => obj.name === "bottom")) {
+      const bottomRect = this.map.findObject("Sensors", obj => obj.name === "bottom");
+      const bottomSensor = this.matter.add.rectangle(
+        bottomRect.x + bottomRect.width / 2,
+        bottomRect.y + bottomRect.height / 2,
+        bottomRect.width,
+        bottomRect.height,
+        { isSensor: true, isStatic: true }
+      );
+      this.unsubscribeBottom = this.matterCollision.addOnCollideStart({
+        objectA: this.player.sprite,
+        objectB: bottomSensor,
+        callback: this.goDownStage,
+        context: this
+      });
+    }
 
     // Create Right map sensor
     if (this.map.findObject("Sensors", obj => obj.name === "right")) {
@@ -155,18 +202,25 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  checkLadder() {
-    var ladderLocation = this.ladderSensor.bounds;
-    var spriteLocation = this.player.sprite.getBounds();
-    spriteLocation.x += this.player.sprite.width;
-
-    return (spriteLocation.x > ladderLocation.min.x &&
-      spriteLocation.x < ladderLocation.max.x &&
-      spriteLocation.y > ladderLocation.min.y &&
-      spriteLocation.y < ladderLocation.max.x);
-    // this.player.sprite.setVelocityX(0);
+  goUpStage() {
+    // Set Top and then load it
+    if (!!this.sceneData && !!this.sceneData.above) {
+      this.unsubscribeTop();
+      localStorage.setItem("spawn_side", "Bottom Spawn");
+      localStorage.setItem("current_map", this.sceneData.above);
+      this.scene.restart();
+    }
   }
 
+  goDownStage() {
+    // Set Top and then load it
+    if (!!this.sceneData && !!this.sceneData.below) {
+      this.unsubscribeBottom();
+      localStorage.setItem("spawn_side", "Top Spawn");
+      localStorage.setItem("current_map", this.sceneData.below);
+      this.scene.restart();
+    }
+  }
 
   goRightStage() {
     // Set Right and then load it
@@ -186,6 +240,19 @@ export default class MainScene extends Phaser.Scene {
       localStorage.setItem("current_map", this.sceneData.left);
       this.scene.restart();
     }
+  }
+
+  checkLadder() {
+    // Get ladder and player coords
+    var ladderLocation = this.ladderSensor.bounds;
+    var spriteLocation = this.player.sprite.getBounds();
+    spriteLocation.x += this.player.sprite.width;
+
+    // return if sprite/player is within the ladder's bounds
+    return (spriteLocation.x > ladderLocation.min.x &&
+      spriteLocation.x < ladderLocation.max.x &&
+      spriteLocation.y > ladderLocation.min.y &&
+      spriteLocation.y < ladderLocation.max.x);
   }
 
   onPlayerCollide({ gameObjectB }) {
