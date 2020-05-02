@@ -60,12 +60,10 @@ export default class MainScene extends Phaser.Scene {
     const tileset = this.map.addTilesetImage("kenney-tileset-64px-extruded");
     const groundLayer = this.map.createDynamicLayer("Ground", tileset, 0, 0);
     const lavaLayer = this.map.createDynamicLayer("Lava", tileset, 0, 0);
-    const ladderLayer = this.map.createDynamicLayer("Ladder", tileset, 0, 0);
     this.map.createDynamicLayer("Background", tileset, 0, 0);
     this.map.createDynamicLayer("Foreground", tileset, 0, 0).setDepth(10);
 
     // Set colliding tiles before converting the layer to Matter bodies
-    ladderLayer.setCollisionByProperty({ collides: true });
     groundLayer.setCollisionByProperty({ collides: true });
     lavaLayer.setCollisionByProperty({ collides: true });
 
@@ -80,7 +78,7 @@ export default class MainScene extends Phaser.Scene {
     this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
     // The spawn point is set using a point object inside of Tiled (within the "Spawn" object layer)
-    const whichSpawn = (localStorage.getItem("travelingLeft") == "false") ? "Spawn Point" : "Back Spawn Point";
+    const whichSpawn = localStorage.getItem("spawn_side");
     const { x, y } = this.map.findObject("Spawn", obj => obj.name === whichSpawn);
     this.player = new Player(this, x, y);
 
@@ -143,7 +141,6 @@ export default class MainScene extends Phaser.Scene {
       });
     }
 
-
     // Create Ladder Sensor
     this.touchingLadder = false;
     if (this.map.findObject("Sensors", obj => obj.name === "ladder")) {
@@ -155,23 +152,19 @@ export default class MainScene extends Phaser.Scene {
         ladderRect.height,
         { isSensor: true, isStatic: true }
       );
-      this.unsubscribeLadder = this.matterCollision.addOnCollideStart({
-        objectA: this.player.sprite,
-        objectB: this.ladderSensor,
-        callback: this.checkLadder,
-        context: this
-      });
     }
-
   }
 
   checkLadder() {
-    console.log("touching ladder;")
-    this.touchingLadder = true;
-    this.player.sprite.setVelocityX(0);
-    //console.info(this.ladderSensor);
-    //console.info(this.player);
+    var ladderLocation = this.ladderSensor.bounds;
+    var spriteLocation = this.player.sprite.getBounds();
+    spriteLocation.x += this.player.sprite.width;
 
+    return (spriteLocation.x > ladderLocation.min.x &&
+      spriteLocation.x < ladderLocation.max.x &&
+      spriteLocation.y > ladderLocation.min.y &&
+      spriteLocation.y < ladderLocation.max.x);
+    // this.player.sprite.setVelocityX(0);
   }
 
 
@@ -179,7 +172,7 @@ export default class MainScene extends Phaser.Scene {
     // Set Right and then load it
     if (!!this.sceneData && !!this.sceneData.right) {
       this.unsubscribeRight();
-      localStorage.setItem("travelingLeft", false);
+      localStorage.setItem("spawn_side", "Left Spawn");
       localStorage.setItem("current_map", this.sceneData.right);
       this.scene.restart();
     }
@@ -189,7 +182,7 @@ export default class MainScene extends Phaser.Scene {
     // Set Left and then load it
     if (!!this.sceneData && !!this.sceneData.left) {
       this.unsubscribeLeft();
-      localStorage.setItem("travelingLeft", true);
+      localStorage.setItem("spawn_side", "Right Spawn");
       localStorage.setItem("current_map", this.sceneData.left);
       this.scene.restart();
     }
@@ -205,7 +198,7 @@ export default class MainScene extends Phaser.Scene {
       // If game over then reset Globals
       if (!!localStorage.getItem("health") && localStorage.getItem("health") == 1) {
         localStorage.setItem("current_map", "map_1");
-        localStorage.setItem("travelingLeft", false); 
+        localStorage.setItem("spawn_side", "Left Spawn"); 
       }
 
       // Create a player death and scene restart

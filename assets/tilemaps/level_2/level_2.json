@@ -1,4 +1,11 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "target":"."
+        }
+    },
  "height":13,
  "infinite":false,
  "layers":[
@@ -93,7 +100,7 @@
                 {
                  "height":0,
                  "id":14,
-                 "name":"Spawn Point",
+                 "name":"Left Spawn",
                  "point":true,
                  "rotation":0,
                  "type":"",

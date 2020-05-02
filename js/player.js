@@ -63,12 +63,21 @@ export default class Player {
     
     // Determine how many hearts show
     this.modifyHealth = function(setData) {
-      this.healthbar_1.setTexture("health", (this.health < 1) ? 329 : 37);
-      this.healthbar_2.setTexture("health", (this.health < 2) ? 329 : 37);
-      this.healthbar_3.setTexture("health", (this.health < 3) ? 329 : 37);
-      this.healthbar_4.setTexture("health", (this.health < 4) ? 329 : 37);
-      this.healthbar_5.setTexture("health", (this.health < 5) ? 329 : 37);
-      if (this.health < 1) { 
+      this.healthbar_1.setTexture("health", (this.health < 1) ? 35 : 37);
+      this.healthbar_2.setTexture("health", (this.health < 2) ? 35 : 37);
+      this.healthbar_3.setTexture("health", (this.health < 3) ? 35 : 37);
+      this.healthbar_4.setTexture("health", (this.health < 4) ? 35 : 37);
+      this.healthbar_5.setTexture("health", (this.health < 5) ? 35 : 37);
+      if (this.health < 1) { //329
+        
+        // Hide health sprites
+        this.healthbar_1.setDepth(-1000);
+        this.healthbar_2.setDepth(-1000);
+        this.healthbar_3.setDepth(-1000);
+        this.healthbar_4.setDepth(-1000);
+        this.healthbar_5.setDepth(-1000);
+        
+        // Do Game Over
         this.gameOver = true; 
         this.gameOverScreen.setVisible(true); 
         this.gameOverExplanation.setVisible(true);
@@ -145,7 +154,7 @@ export default class Player {
     const { LEFT, RIGHT, UP, A, D, W, SPACE, H, R, DOWN, S } = Phaser.Input.Keyboard.KeyCodes;
     this.leftInput = new MultiKey(scene, [LEFT, A]);
     this.rightInput = new MultiKey(scene, [RIGHT, D]);
-    this.jumpInput = new MultiKey(scene, [UP, W, SPACE]);
+    this.upInput = new MultiKey(scene, [UP, W, SPACE]);
     this.downInput = new MultiKey(scene, [DOWN, S]);
     this.helpInput = new MultiKey(scene, [H]);
     this.contInput = new MultiKey(scene, [R]);
@@ -200,19 +209,15 @@ export default class Player {
     // Keyboard input states
     const isRightKeyDown = this.rightInput.isDown();
     const isLeftKeyDown = this.leftInput.isDown();
-    const isJumpKeyDown = this.jumpInput.isDown();
+    const isUpKeyDown = this.upInput.isDown();
     const isDownKeyDown = this.downInput.isDown();
     const isHelpKeyDown = this.helpInput.isDown();
     const isHelpKeyUp = this.helpInput.isUp();
     const isContKeyDown = this.contInput.isDown();
 
-    // Ladder movement
-    //this.onLadder = this.scene.checkLadder();
-
     // Show help text
     if (isHelpKeyDown && !this.gameOver) {
       if (!this.helpToggledState) {
-        this.scene.checkLadder();
         this.help.setVisible(!this.help._visible);
         this.helpToggledState = true;
       } 
@@ -251,28 +256,21 @@ export default class Player {
       }
     }
 
-    if (this.scene.touchingLadder) {
-      if (!isOnGround) {
-        // only space initiates jump
-        //   jumping reenables left/right
-        
-        // down travels down
-        if (isDownKeyDown) {
+    // Ladder logic
+    if (this.scene.checkLadder()) {
+      // TODO possibly remove gravity while on ladder?
+      if (!isOnGround && isDownKeyDown) {
           sprite.applyForce({ x: 0, y: 0.005 });
-        }
       }
-      if (isJumpKeyDown) {
+      if (isUpKeyDown) {
         sprite.applyForce({ x: 0, y: -0.005 });
         sprite.setVelocityX(0);
-        // up climbs ladder
-        // left / right traveling disabled
-        // gravity disabled
       }
 
     } else {
 
       // Jump movement (with delay between jumps so bottom sensor doesnt collide)
-      if (isJumpKeyDown && this.canJump && isOnGround && !this.gameOver) {
+      if (isUpKeyDown && this.canJump && isOnGround && !this.gameOver) {
         sprite.setVelocityY(-11);
         this.canJump = false;
         this.jumpCooldownTimer = this.scene.time.addEvent({
@@ -280,7 +278,6 @@ export default class Player {
           callback: () => (this.canJump = true)
         });
       }
-
     }
 
     // Update the animation/texture based on the state of the player's state

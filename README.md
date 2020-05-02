@@ -16,6 +16,8 @@
 
 7. Add enemies
 
+8. Add a camera phase in after scene restart
+
 
 Ladder logic
 

@@ -12,7 +12,7 @@ import MainScene from "./main-scene.js";
 window.onload = function() { 
   localStorage.setItem("health", 5); 
   localStorage.setItem("current_map", "map_1");
-  localStorage.setItem("travelingLeft", false); 
+  localStorage.setItem("spawn_side", "Left Spawn"); 
 }
 
 const config = {

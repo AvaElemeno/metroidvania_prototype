@@ -2052,7 +2052,7 @@
   </object>
  </objectgroup>
  <objectgroup id="6" name="Spawn">
-  <object id="14" name="Spawn Point" x="102" y="366">
+  <object id="14" name="Left Spawn" x="102" y="366">
    <point/>
   </object>
  </objectgroup>
