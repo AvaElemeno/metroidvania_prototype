@@ -1,10 +1,10 @@
 
 # TODO LIST
 
+1. Actually design some interesting levels (better test)
+	(this might include some real life drawing ideas)
 
-1. Need to add up and down directions for inter scene movement
-
-2. Add stage object LADDER which allows player to move up and down
+2. Make the empty health sprite transparent (alpha value)
 
 3. Change health into its own png, make it a spritesheet
 
@@ -14,36 +14,15 @@
 
 6. Add attack animation / ability to break crates
 
-7. Add enemies
+7. Add Collectables?
 
-8. Add a camera phase in after scene restart
+8. Add enemies
 
+9. Add a camera phase in after scene restart
 
-Ladder logic
+10. Play around with removing player gravity while on ladder
 
-NEED TO DO
-find a way to disable gravity
-make ladder logic only occur while on ladder =>
-put the collision checker into the update function?
-
-
-need a function that can check if the player is on the ladder
-
-while (within ladder bounds) {
-	if (not on ground) {
-		only space initiates jump
-			jumping reenables left/right
-		left input disabled
-		right input disabled
-		down travels down
-	}
-	if (up has been pressed) {
-		up climbs ladder
-		left / right traveling disabled
-		gravity disabled
-	}
-
-}
+11. Possibly refactor ladder code?
 
 
 

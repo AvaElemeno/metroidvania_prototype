@@ -66,6 +66,8 @@ export default class MainScene extends Phaser.Scene {
     }
     this.sceneData = globalScenesMap[localStorage.getItem("current_map")];
 
+    // Fade in
+    this.cameras.main.fadeIn(250, 0, 0, 0);
 
     // Declare initial setup for the map
     this.map = this.make.tilemap({ key: localStorage.getItem("current_map") });

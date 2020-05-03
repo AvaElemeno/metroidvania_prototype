@@ -40,7 +40,10 @@ export default class MapExit {
       this.unsubscribeExit();
       localStorage.setItem("spawn_side", this.spawnSide);
       localStorage.setItem("current_map", this.sceneData[this.sceneDataProp]);
-      this.scene.scene.restart();
+
+      const cam = this.scene.cameras.main;
+      cam.fade(250, 0, 0, 0);
+      cam.once("camerafadeoutcomplete", () => this.scene.scene.restart());
     }
   }
 }

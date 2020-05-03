@@ -55,28 +55,20 @@ export default class Player {
       localStorage.getItem("health") : 5;
 
     // Add the hearts
-    this.healthbar_1 = scene.matter.add.sprite(32, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
-    this.healthbar_2 = scene.matter.add.sprite(64, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
-    this.healthbar_3 = scene.matter.add.sprite(96, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
-    this.healthbar_4 = scene.matter.add.sprite(128, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
-    this.healthbar_5 = scene.matter.add.sprite(160, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(1000);
+    this.healthbar_1 = scene.matter.add.sprite(32, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
+    this.healthbar_2 = scene.matter.add.sprite(64, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
+    this.healthbar_3 = scene.matter.add.sprite(96, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
+    this.healthbar_4 = scene.matter.add.sprite(128, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
+    this.healthbar_5 = scene.matter.add.sprite(160, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
     
     // Determine how many hearts show
     this.modifyHealth = function(setData) {
-      this.healthbar_1.setTexture("health", (this.health < 1) ? 35 : 37);
-      this.healthbar_2.setTexture("health", (this.health < 2) ? 35 : 37);
-      this.healthbar_3.setTexture("health", (this.health < 3) ? 35 : 37);
-      this.healthbar_4.setTexture("health", (this.health < 4) ? 35 : 37);
-      this.healthbar_5.setTexture("health", (this.health < 5) ? 35 : 37);
-      if (this.health < 1) { //329
-        
-        // Hide health sprites
-        this.healthbar_1.setDepth(-1000);
-        this.healthbar_2.setDepth(-1000);
-        this.healthbar_3.setDepth(-1000);
-        this.healthbar_4.setDepth(-1000);
-        this.healthbar_5.setDepth(-1000);
-        
+      this.healthbar_1.setTexture("health", (this.health < 1) ? 35 : 37).setAlpha(((this.health < 1))?0.25:1);
+      this.healthbar_2.setTexture("health", (this.health < 2) ? 35 : 37).setAlpha(((this.health < 2))?0.25:1);
+      this.healthbar_3.setTexture("health", (this.health < 3) ? 35 : 37).setAlpha(((this.health < 3))?0.25:1);
+      this.healthbar_4.setTexture("health", (this.health < 4) ? 35 : 37).setAlpha(((this.health < 4))?0.25:1);
+      this.healthbar_5.setTexture("health", (this.health < 5) ? 35 : 37).setAlpha(((this.health < 5))?0.25:1);
+      if (this.health < 1) {       
         // Do Game Over
         this.gameOver = true; 
         this.gameOverScreen.setVisible(true); 
@@ -256,7 +248,7 @@ export default class Player {
       }
     }
 
-    // Ladder logic
+    // Detect if Ladder
     if (this.scene.checkLadder()) {
       // TODO possibly remove gravity while on ladder?
       if (!isOnGround && isDownKeyDown) {
