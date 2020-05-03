@@ -1,6 +1,7 @@
 import Player from "./player.js";
 import createRotatingPlatform from "./create-rotating-platform.js";
 import MapExit from "./map-exit.js";
+import MaxHealthUp from "./max-health-up.js";
 
 export default class MainScene extends Phaser.Scene {
   preload() {
@@ -125,6 +126,9 @@ export default class MainScene extends Phaser.Scene {
     this.leftExit   = new MapExit(this, "left", "left", "Right Spawn");
     this.rightExit  = new MapExit(this, "right", "right", "Left Spawn");
 
+    // Implement health increase item
+    this.maxHealthUpItem = new MaxHealthUp(this);
+
     // Create Ladder Sensor
     this.touchingLadder = false;
     if (this.map.findObject("Sensors", obj => obj.name === "ladder")) {
@@ -140,16 +144,18 @@ export default class MainScene extends Phaser.Scene {
   }
 
   checkLadder() {
-    // Get ladder and player coords
-    var ladderLocation = this.ladderSensor.bounds;
-    var spriteLocation = this.player.sprite.getBounds();
-    spriteLocation.x += this.player.sprite.width;
+    if (this.map.findObject("Sensors", obj => obj.name === "ladder")) {
+      // Get ladder and player coords
+      var ladderLocation = this.ladderSensor.bounds;
+      var spriteLocation = this.player.sprite.getBounds();
+      spriteLocation.x += this.player.sprite.width;
 
-    // return if sprite/player is within the ladder's bounds
-    return (spriteLocation.x > ladderLocation.min.x &&
-      spriteLocation.x < ladderLocation.max.x &&
-      spriteLocation.y > ladderLocation.min.y &&
-      spriteLocation.y < ladderLocation.max.x);
+      // return if sprite/player is within the ladder's bounds
+      return (spriteLocation.x > ladderLocation.min.x &&
+        spriteLocation.x < ladderLocation.max.x &&
+        spriteLocation.y > ladderLocation.min.y &&
+        spriteLocation.y < ladderLocation.max.x);
+    }
   }
 
   onPlayerCollide({ gameObjectB }) {

@@ -13,6 +13,7 @@ window.onload = function() {
   localStorage.setItem("health", 5); 
   localStorage.setItem("current_map", "map_1");
   localStorage.setItem("spawn_side", "Left Spawn"); 
+  localStorage.setItem("map_2_max_hp_up", "false");
 }
 
 const config = {

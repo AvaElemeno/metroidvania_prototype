@@ -18,9 +18,21 @@ export default class Player {
       frameRate: 12,
       repeat: -1
     });
+    anims.create({
+      key: "player-die",
+      frames: anims.generateFrameNumbers("player", { start: 16, end: 19 }),
+      frameRate: 2,
+      repeat: 0
+    });
 
-    // Create the physics-based sprite that we will move around and animate
-    this.sprite = scene.matter.add.sprite(0, 0, "player", 0);
+    // Game Over seperate player dying sprite
+    this.deathSprite = scene.matter.add.sprite(0, 0, "player", 0)
+      .setStatic(true)
+      .setScale(2)
+      .setDepth(1001)
+      .setScrollFactor(0)
+      .setPosition(0, 0)
+      .setTexture("player", 31);
 
     // Create help text box
     this.helpToggledState = false;
@@ -32,7 +44,7 @@ export default class Player {
     }).setScrollFactor(0).setDepth(1000);
     this.help.setVisible(false);
 
-    // Handle Game Over Text
+    // Handle Game Over Screen
     this.gameOver = false;
     this.gameOverScreen = scene.add.text(0, 0, "GAME OVER", {
       fontSize: "64px",
@@ -50,9 +62,13 @@ export default class Player {
     }).setScrollFactor(0).setDepth(1000);
     this.gameOverExplanation.setVisible(false);
 
+    // Determine number of health powerups obtained (TODO:this is a terrible way to do this)
+    this.numMaxHpUps = 0;
+    this.numMaxHpUps += (localStorage.getItem("map_2_max_hp_up") == "true") ? 1:0;
+
     // Create health bar
     this.health = (!!localStorage.getItem("health")) ? 
-      localStorage.getItem("health") : 5;
+      (parseInt(localStorage.getItem("health"))): 5 + this.numMaxHpUps;
 
     // Add the hearts
     this.healthbar_1 = scene.matter.add.sprite(32, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
@@ -60,19 +76,26 @@ export default class Player {
     this.healthbar_3 = scene.matter.add.sprite(96, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
     this.healthbar_4 = scene.matter.add.sprite(128, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
     this.healthbar_5 = scene.matter.add.sprite(160, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
-    
+    this.healthbar_6 = scene.matter.add.sprite(192, 32, "health", 0).setStatic(true).setScrollFactor(0).setDepth(999);
+
     // Determine how many hearts show
     this.modifyHealth = function(setData) {
+      var hp6 = (this.numMaxHpUps > 0) ? 35:329;
       this.healthbar_1.setTexture("health", (this.health < 1) ? 35 : 37).setAlpha(((this.health < 1))?0.25:1);
       this.healthbar_2.setTexture("health", (this.health < 2) ? 35 : 37).setAlpha(((this.health < 2))?0.25:1);
       this.healthbar_3.setTexture("health", (this.health < 3) ? 35 : 37).setAlpha(((this.health < 3))?0.25:1);
       this.healthbar_4.setTexture("health", (this.health < 4) ? 35 : 37).setAlpha(((this.health < 4))?0.25:1);
       this.healthbar_5.setTexture("health", (this.health < 5) ? 35 : 37).setAlpha(((this.health < 5))?0.25:1);
+      this.healthbar_6.setTexture("health", (this.health < 6) ? hp6: 37).setAlpha(((this.health < 6))?0.25:1);
+
       if (this.health < 1) {       
         // Do Game Over
         this.gameOver = true; 
+        this.scene.cameras.main.fadeIn(1500, 128, 0, 0);
         this.gameOverScreen.setVisible(true); 
         this.gameOverExplanation.setVisible(true);
+        this.deathSprite.setPosition(384, 200);
+        this.deathSprite.anims.play("player-die", true);
       }
       if (setData) { localStorage.setItem("health", (this.health > 0) ? this.health -=1 : (this.gameOver)? 0:5); }
     }  
@@ -100,6 +123,9 @@ export default class Player {
     //
     // The main body is what collides with the world. The sensors are used to determine if the
     // player is blocked by a wall or standing on the ground.
+
+    // Create the physics-based sprite that we will move around and animate
+    this.sprite = scene.matter.add.sprite(0, 0, "player", 0);
 
     const { Body, Bodies } = Phaser.Physics.Matter.Matter; // Native Matter modules
     const { width: w, height: h } = this.sprite;
@@ -220,6 +246,7 @@ export default class Player {
 
     // Check for continue when Game Over
     if (this.gameOver && isContKeyDown) {
+      this.deathSprite.setPosition(0, 0).setTexture("player", 31);
       this.gameOverScreen.setVisible(false);
       this.gameOverExplanation.setVisible(false);
       this.gameOver = false;
