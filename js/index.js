@@ -11,8 +11,8 @@
 import MainScene from "./main-scene.js";
 window.onload = function() { 
   localStorage.setItem("health", 5); 
-  localStorage.setItem("current_map", "map_1");
-  localStorage.setItem("spawn_side", "Left Spawn"); 
+  localStorage.setItem("current_map", "map_3");//"map_1");
+  localStorage.setItem("spawn_side", "Bottom Spawn");//"Left Spawn"); 
   localStorage.setItem("map_2_max_hp_up", "false");
 }
 

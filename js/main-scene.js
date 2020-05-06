@@ -154,7 +154,7 @@ export default class MainScene extends Phaser.Scene {
       return (spriteLocation.x > ladderLocation.min.x &&
         spriteLocation.x < ladderLocation.max.x &&
         spriteLocation.y > ladderLocation.min.y &&
-        spriteLocation.y < ladderLocation.max.x);
+        spriteLocation.y < ladderLocation.max.y);
     }
   }
 

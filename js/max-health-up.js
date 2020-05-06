@@ -58,6 +58,7 @@ export default class MaxHealthUp {
       // Increase player health
       this.scene.player.numMaxHpUps +=1;
       this.scene.player.health = 5 + this.scene.player.numMaxHpUps;
+      localStorage.setItem("health", this.scene.player.health);
       this.scene.player.modifyHealth(false);
     }
   }

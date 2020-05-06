@@ -277,6 +277,9 @@ export default class Player {
 
     // Detect if Ladder
     if (this.scene.checkLadder()) {
+
+      //console.log(this.scene.checkLadder());
+
       // TODO possibly remove gravity while on ladder?
       if (!isOnGround && isDownKeyDown) {
           sprite.applyForce({ x: 0, y: 0.005 });
