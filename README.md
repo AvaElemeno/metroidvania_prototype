@@ -1,51 +1,69 @@
+---
+# FEATURES TODO LIST
 
-# TODO LIST
++	Add a locked door in front of right exit and fix ceiling not colliding
 
-1. Actually design some interesting levels (better test)
-	(this might include some real life drawing ideas)
++	Add ability for multiple ladders per scene
 
-2. **DONE** Make the empty health sprite transparent (alpha value)
++	Find a better way of implementing Globals than localStorage
 
-3. Change health into its own png, make it a spritesheet (for when tileset is maybe changed)
++	Add ability to interact with signs / a dialog system
 
-4. Find a better way of implementing Globals than localStorage
++	Add attacking code (also ablitiy to break crates)
 
-5. Add ability to interact with signs / a dialog system
++	Add enemies
 
-6. Add attack animation / ability to break crates
+---
+# REFACTORING TODO LIST
 
-7. Add Collectables?
++	Make the MaxHealthUp class generic so it can be used by other kinds of items
 
-8. Add enemies
++	Refactor how health works -> its a messs
 
-9. **DONE** Add a camera phase in after scene restart
++	Refactor ladders (maybe give them their own layer in tiled) (possibly remove gravity)
 
-10. Play around with removing player gravity while on ladder
+---
+# BUG LIST
+***BUG***: When hitting game over, even if mxHpUp not obtained, health is set to 6 and
+	the sprite for death animation doesnt disapear .... but this does not always occur?
 
-11. Refactor ladder code and maybe ladders should be their own layer in tiled
+***BUG***: Diagonal slope tiles (other than the blue ones) act as solid blocks instead of
+	as a slope
 
-12. Edit tileset in gimp - specifically add ceiling tiles (or like stalagtites or something)
+---
+# ART TODO LIST
 
-13. Add a pause button
++	(ONGOING) add more levels 
 
-14. Add an animated version of the player dying to the game over screen
++	Make a map including all levels (to keep track of everything)
 
-15. Fix diagonal slope tiles not working outside of the starting map colors
++	Need to create sprite attack animation
 
-16. *Immediate* on map_2 change crate block (which comes from /images/block.png)
++	Need to add castle-like tiles
 
-17. *Immediate* add ceiling tiles to the tileset image
++	Add ceiling tiles
 
-18. *Immediate* map_3 should contain vines that are actually ladders
-	...this means we need to be able to have multiple ladders per stage
++	Need to add alternate crate images
 
-19. Add a locked door in front of right exit and fix ceiling not colliding
++	Change health into its own png, make it a spritesheet (for when tileset is maybe changed)
 
-20. Add a health increase on the plant on map_2
++	Add attack animation
 
-21. Make the MaxHealthUp class generic so it can be used by other kinds of items
++	Add ememy sprites
 
-22. Refactor how health works -> its a messs
+---
+# FINISHED ITEMS LIST
+
+***DONE*** Add a health increase on the plant on map_2
+
+***DONE*** Add an animated version of the player dying to the game over screen
+
+***DONE*** Edit tileset in gimp - specifically add ceiling tiles (or like stalagtites or something)
+
+***DONE*** Add a camera phase in after scene restart
+
+***DONE*** Make the empty health sprite transparent (alpha value)
+
 
 ---
 // Depricated emoji script (which is funny)
